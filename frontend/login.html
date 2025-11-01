@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Keyword Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js" crossorigin="anonymous"></script>
+  <style>
+    /* Your existing styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      background-color: #f8f9fa;
+    }
+    .banner {
+      max-width: 800px;
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 20px auto 0;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .title {
+      font-size: 32px;
+      color: #1d4ed8;
+      margin-bottom: 24px;
+      margin-top: 16px;
+    }
+    .login-box {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    #loginBtn {
+      padding: 12px 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      color: #000;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    #loginBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    h2 {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .ms-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: white;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .ms-button svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <img src="/frontend/GAIN-Logo.png" alt="GAIN Banner" class="banner" />
+
+  <div class="content">
+    <div class="title">Keyword Generator</div>
+
+    <div class="login-box">
+      <h2>Log in</h2>
+      <button id="loginBtn" class="ms-button" type="button">
+        <svg
+          viewBox="0 0 48 48"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <rect x="1" y="1" width="22" height="22" fill="#F25022" />
+          <rect x="25" y="1" width="22" height="22" fill="#7FBA00" />
+          <rect x="1" y="25" width="22" height="22" fill="#00A4EF" />
+          <rect x="25" y="25" width="22" height="22" fill="#FFB900" />
+        </svg>
+        Continue with Microsoft Entra ID
+      </button>
+
+      <p style="margin-top: 16px; color: #555;">
+        Contact your site administrator to request access.
+      </p>
+    </div>
+  </div>
+
+  <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const btn = document.getElementById("loginBtn");
+  if (!btn) return;
+
+  // --- Load configuration from backend ---
+  let config;
+  try {
+    const res = await fetch("/api/frontend_config");
+    config = await res.json();
+  } catch (err) {
+    console.error("Failed to load backend config", err);
+    alert("Configuration load failed. Please try again later.");
+    return;
+  }
+
+  const CLIENT_ID = config.CLIENT_ID;
+  const TENANT_ID = config.TENANT_ID;
+  const SCOPES = config.SCOPES || ["openid", "profile", "email"];
+  const REDIRECT_URI = window.location.origin + "/frontend/login.html";
+
+  // --- Configure MSAL for single-tenant login ---
+  const msalConfig = {
+    auth: {
+      clientId: CLIENT_ID,
+      authority: `https://login.microsoftonline.com/${TENANT_ID}`, // Only your org
+      redirectUri: REDIRECT_URI,
+    },
+    cache: {
+      cacheLocation: "localStorage",
+      storeAuthStateInCookie: false,
+    },
+  };
+
+  const pca = new msal.PublicClientApplication(msalConfig);
+
+  // --- Handle redirect after login ---
+  try {
+    const response = await pca.handleRedirectPromise();
+    let account = null;
+
+    if (response && response.account) {
+      account = response.account;
+    } else {
+      const accounts = pca.getAllAccounts();
+      if (accounts.length > 0) account = accounts[0];
+    }
+
+    if (account) {
+      const claims = account.idTokenClaims || {};
+      const tokenTenantId = claims.tid;
+      const email = claims.preferred_username || account.username || "";
+      const fullName = claims.name || email.split("@")[0];
+      const firstName = fullName.split(" ")[0];
+
+      // Enforce tenant match (no guest or external users)
+      if (!tokenTenantId || tokenTenantId.toLowerCase() !== TENANT_ID.toLowerCase()) {
+  console.warn("Unauthorized tenant login attempt:", email, "from tenant:", tokenTenantId);
+  alert("Access denied. Please sign in with your organization account.");
+  await pca.logoutRedirect();
+  return;
+}
+
+      // Save user info in localStorage for later display
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("firstName", firstName);
+
+      // Redirect to main app page
+      window.location.href = "/frontend/index.html";
+      return;
+    }
+  } catch (err) {
+    console.error("MSAL redirect error:", err);
+  }
+
+  // --- Start login on button click ---
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    try {
+      await pca.loginRedirect({ scopes: SCOPES });
+    } catch (err) {
+      console.error("Login error:", err);
+      btn.disabled = false;
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+You are a marketing assistant for keyword ideation.
+Return {n} concise keyword PHRASES for:
+Topic: {topic}
+Brand: {brand}
+Modifiers: {mod}
+
+Rules:
+- max 80 characters / 10 words each
+- no numbering/bullets
+- one phrase per line
+- avoid duplicates and near-duplicates

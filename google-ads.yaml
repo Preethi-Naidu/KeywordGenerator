@@ -1,0 +1,6 @@
+developer_token: "xxxxx"
+client_id: "xxxxx"
+client_secret: "xxxxx"
+refresh_token: "xxxxx"
+login_customer_id: "xxxxx"
+use_proto_plus: True

@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keyword Generator</title>
+
+  <!-- Tailwind and MSAL -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+   
+
+    .slider-thumb::-webkit-slider-thumb {
+      appearance: none;
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .slider-thumb::-moz-range-thumb {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+   .input-error {
+  border: 2px solid #9ca3af !important; background-color: #f3f4f6;
+}
+    .error-message { color: red; font-size: 0.9rem; margin-top: 3px; display: none; }
+    .error-message.active { display: block; }
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.feature-card {
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+:root {
+  --primary: #7c3aed;        /* violet-600 */
+  --primary-hover: #6d28d9;  /* violet-700 */
+  --light-bg: #f5f3ff;       /* violet-50 */
+  --neutral: #a78bfa;        /* violet-400 */
+  --neutral-hover: #8b5cf6;  /* violet-500 */
+  --text-strong: #4c1d95;    /* violet-900 */
+}
+
+/* Unified Buttons */
+button, .btn {
+  transition: all 0.25s ease;
+}
+
+#generateBtn,
+#downloadCSV {
+  background: linear-gradient(to right, var(--primary), var(--primary-hover));
+  color: white;
+  border: none;
+}
+
+#generateBtn:hover,
+#downloadCSV:hover {
+  background: linear-gradient(to right, var(--primary-hover), var(--primary));
+  transform: scale(1.02);
+}
+
+.how-step-number {
+  background-color: #7c3aed; /* Tailwind's violet-600 */
+}
+
+
+/* Quota banner */
+.quota-banner {
+  background-color: var(--light-bg);
+  color: var(--text-strong);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 1rem;
+  padding: 0.6rem 1.2rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.15);
+}
+
+/* Feature Cards - Glass Violet */
+.feature-card {
+  background: rgba(139, 92, 246, 0.15);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
+  color: #1e1b4b;
+}
+
+/* Style TomSelect input to match Tailwind form inputs */
+.ts-wrapper.single {
+  position: relative;
+}
+
+.ts-wrapper.single .ts-control {
+  border: 1px solid #d1d5db !important;     /* Tailwind gray-300 */
+  border-radius: 0.375rem !important;       /* rounded-md */
+  font-size: 0.875rem;                      /* text-sm */
+  padding: 0.5rem 0.75rem;
+  padding-right: 2rem !important;           /* space for clear button */
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* shadow-sm */
+  min-height: 2.5rem;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focused state */
+.ts-wrapper.focus .ts-control {
+  border-color: #8b5cf6 !important;         /* Tailwind purple-500 */
+  box-shadow: 0 0 0 1px #c084fc !important; /* Tailwind ring-purple-400 */
+  outline: none !important;
+}
+
+/* Inner input inside TomSelect */
+.ts-wrapper.single .ts-control input {
+  font-size: 0.875rem;          /* text-sm */
+  color: #111827;               /* gray-900 */
+  padding: 0;
+  margin: 0;
+  line-height: 1.25rem;         /* leading-5 */
+}
+
+.ts-wrapper.single .ts-control input::placeholder {
+  color: #9ca3af;               /* Tailwind gray-400 */
+  opacity: 1;
+}
+
+/* Normalize sort icon size and alignment */
+th svg {
+  width: 1rem !important;
+  height: 1rem !important;
+  stroke-width: 2;
+  vertical-align: middle;
+  flex-shrink: 0;
+  margin-top: 1px; /* aligns with text baseline */
+}
+
+/* Normalize sort icon size and alignment */ 
+th svg { width: 1rem !important; 
+  height: 1rem !important; stroke-width: 2; 
+  vertical-align: middle; flex-shrink: 0; margin-top: 1px; /* aligns with text baseline */ }
+
+  </style>
+</head>
+
+<body class="h-full flex flex-col items-center justify-start pt-8">
+<div class="absolute top-6 right-8 flex items-center space-x-4 z-50"> 
+  <!-- Profile circle --> 
+   <button id="profileCircle" type="button" class="w-9 h-9 flex items-center justify-center rounded-full bg-purple-600 text-white font-semibold text-sm cursor-pointer select-none shadow-md hover:opacity-90 transition focus:outline-none focus:ring-0 z-50" 
+   title="Your Account"> </button> 
+    <!-- Dropdown -->
+     <div
+  id="logoutMenu"
+  class="hidden absolute top-14 right-0 bg-white rounded-xl shadow-xl border border-gray-100 
+         z-50 opacity-0 transform scale-95 transition-all duration-150 ease-out w-44 py-3"
+>
+  <div class="flex flex-col items-center space-y-2">
+    <div id="userGreeting" class="text-sm text-gray-800 font-medium text-center">
+      Hi
+    </div>
+    <button
+      id="logoutBtn"
+      type="button"
+      class="text-sm font-medium bg-purple-600 text-white px-3 py-1 rounded-md shadow hover:bg-purple-700 transition"
+    >
+      Logout
+    </button>
+  </div>
+</div>
+
+
+</div>
+
+
+<script>
+  //const whoamiEl = document.getElementById("whoami");
+  const profileCircle = document.getElementById("profileCircle");
+  const logoutMenu = document.getElementById("logoutMenu");
+  const greetingEl = document.getElementById("userGreeting");
+
+  // --- Profile initials + Hi name greeting ---
+  const updateProfileInitial = () => {
+  const email = localStorage.getItem("userEmail") || "User";
+  const name = localStorage.getItem("firstName") || email.split("@")[0];
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
+  profileCircle.textContent = initials || "U";
+  if (greetingEl) greetingEl.textContent = `Hi ${name}`;
+};
+  updateProfileInitial();
+
+  // --- Dropdown animation ---
+  const showMenu = () => {
+    logoutMenu.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      logoutMenu.classList.remove("opacity-0", "scale-95");
+      logoutMenu.classList.add("opacity-100", "scale-100");
+    });
+  };
+  const hideMenu = () => {
+    logoutMenu.classList.add("opacity-0", "scale-95");
+    logoutMenu.classList.remove("opacity-100", "scale-100");
+    setTimeout(() => logoutMenu.classList.add("hidden"), 120);
+  };
+
+  profileCircle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (logoutMenu.classList.contains("hidden")) showMenu(); else hideMenu();
+  });
+  document.addEventListener("click", hideMenu);
+  logoutMenu.addEventListener("click", (e) => e.stopPropagation());
+</script>
+
+
+  <h1 class="text-5xl font-bold mb-2">Fast. Creative. Data-backed.</h1>
+  <h2 class="text-gray-600 font-bold mb-6">Scale your keyword ideas with zero hassle.</h2>
+
+<!-- Quota badge -->
+<div
+  id="quotaBanner"
+  class="absolute right-10 top-60 bg-gray-200 text-black rounded-2xl px-5 py-3 
+         flex flex-col items-start shadow-sm text-sm font-medium leading-relaxed z-40">
+  <div><strong>Google Daily Quota left:</strong> <span id="quotaLeft"> </span></div>
+  <div><strong>OpenAI quota left:</strong> <span id="openaiQuotaLeft"> </span></div>
+</div>
+
+  <!-- Alerts -->
+<div id="alertContainer" 
+     class="hidden w-full max-w-md px-4 mb-4"
+     role="alert" 
+     aria-live="assertive">
+  <div id="errorAlert" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-md p-3">
+    <span id="errorMessage"></span>
+  </div>
+</div>
+
+
+  <!-- Form Container -->
+  <div class="flex flex-col items-center space-y-4  w-full max-w-md px-4" role="form" aria-label="Keyword form">
+
+<!-- Topic -->
+<div class="w-full">
+  <label for="topic" class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+    Topic <span class="text-red-500">*</span>
+  </label>
+
+  <div class="relative">
+    <input
+      type="text"
+      id="topic"
+      required
+      placeholder="Enter topic (required)"
+      class="w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-md 
+             focus:border-purple-500 focus:ring-1 focus:ring-purple-400 focus:outline-none transition-colors duration-200"
+    />
+  </div>
+
+  <div id="topicError" class="error-message"></div>
+</div>
+
+
+<!-- Brand -->
+<div class="w-full mt-4">
+  <label for="brandSelect" class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+    Brand Name
+  </label>
+
+  <select
+    id="brandSelect"
+    placeholder="Type or select brand (optional)"
+    class="w-full text-sm border border-gray-300 rounded-md 
+           focus:border-purple-500 focus:ring-1 focus:ring-purple-400 
+           focus:outline-none transition-colors duration-200">
+    <option value=""></option>
+  </select>
+</div>
+
+
+<!-- Modifier -->
+<div class="w-full mt-4">
+  <label for="modifier" class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+    Modifier
+  </label>
+
+  <div class="relative">
+    <input
+      type="text"
+      id="modifier"
+      placeholder="Enter modifiers (optional)"
+      class="w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-md 
+             focus:border-purple-500 focus:ring-1 focus:ring-purple-400 focus:outline-none transition-colors duration-200"
+    />
+  </div>
+</div>
+
+
+<!-- Keyword Count Slider -->
+<div class="w-full mt-4">
+  <label for="keywordCount" class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+    Keywords:
+    <span id="keywordValue" class="text-black font-semibold">10</span>
+  </label>
+
+  <div>
+    <input
+      type="range"
+      id="keywordCount"
+      min="10"
+      max="50"
+      step="10"
+      value="10"
+      class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black 
+             focus:outline-none focus:ring-1 focus:ring-gray-500"
+    />
+    <div class="flex justify-between text-xs text-gray-400 mt-1">
+      <span>10</span>
+      <span>50</span>
+    </div>
+  </div>
+</div>
+
+  
+<!-- Model Dropdown -->
+<div class="w-full mt-4">
+  <label for="model" class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+    Choose Model
+  </label>
+
+  <select
+    id="model"
+    class="w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-md 
+           focus:border-purple-500 focus:ring-1 focus:ring-purple-400 
+           focus:outline-none transition duration-200">
+    <option value="gpt-5">gpt-5 (Highly creative)</option>
+    <option value="gpt-5-mini">gpt-5-mini (Reasonably creative)</option>
+    <option value="gpt-4o">gpt-4o (Minimally creative)</option>
+  </select>
+</div>
+
+
+
+<!-- Generate -->
+ <div class="relative z-10 mt-7 w-full max-w-md flex flex-col items-center space-y-2">
+
+<div class="flex items-center justify-center w-full space-x-4">
+  <button id="generateBtn"
+          class="min-w-[200px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
+                 text-white font-medium py-2.5 px-6 rounded-md transition-all duration-200 
+                 transform hover:scale-105 shadow-md hover:shadow-lg text-sm text-center">
+    Generate Keywords
+  </button>
+
+  <div class="flex flex-col items-start min-w-[160px]">
+    <span id="estimateBox" class="text-sm text-gray-600 italic whitespace-nowrap"></span>
+    <div id="status" class="text-sm text-slate-600 whitespace-nowrap"></div>
+  </div>
+</div>
+</div>
+
+
+<!-- Results Section -->
+<div id="results" class="hidden mt-8 p-6 bg-gray-50 rounded-lg">
+  <div id="resultsHeader" class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold text-gray-800">Generated Keywords:</h3>
+    <button
+      id="downloadCSV"
+      class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      Download All Results
+    </button>
+  </div>
+
+  <!-- Controls (search + filters) -->
+  <div class="mb-4 flex flex-wrap gap-3 items-center">
+    <div class="relative flex-1 min-w-[200px] max-w-xs">
+      <input id="keywordSearch" placeholder="Search..."
+             class="w-full px-3 py-1 pl-7 text-xs border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none transition-colors duration-200">
+      <button id="clearSearch"
+              class="absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 hover:text-gray-600 transition duration-200 hidden"
+              type="button" aria-label="Clear search">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex space-x-3">
+      <div class="relative">
+        <select id="competitionFilter"
+                class="px-3 py-1 text-xs border border-gray-300 rounded-md focus:border-blue-500 bg-white pr-8">
+          <option value="">All Competition</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <button id="clearCompetition" type="button"
+                class="absolute inset-y-0 right-6 hidden px-1 text-gray-400 hover:text-gray-600"
+                aria-label="Clear competition">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="relative">
+        <select id="volumeFilter"
+                class="px-3 py-1 text-xs border border-gray-300 rounded-md focus:border-blue-500 bg-white pr-8">
+          <option value="">All Volume</option>
+          <option value="0-1000">0 - 1K</option>
+          <option value="1000-10000">1K - 10K</option>
+          <option value="10000-50000">10K - 50K</option>
+          <option value="50000+">50K+</option>
+        </select>
+        <button id="clearVolume" type="button"
+                class="absolute inset-y-0 right-6 hidden px-1 text-gray-400 hover:text-gray-600"
+                aria-label="Clear volume">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="relative">
+        <select id="cpcFilter"
+                class="px-3 py-1 text-xs border border-gray-300 rounded-md focus:border-blue-500 bg-white pr-8">
+          <option value="">All CPC</option>
+          <option value="0-1">$0 - $1</option>
+          <option value="1-3">$1 - $3</option>
+          <option value="3-5">$3 - $5</option>
+          <option value="5+">$5+</option>
+        </select>
+        <button id="clearCpc" type="button"
+                class="absolute inset-y-0 right-6 hidden px-1 text-gray-400 hover:text-gray-600"
+                aria-label="Clear CPC">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Keywords</th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b cursor-pointer hover:bg-gray-200"
+    onclick="sortTable('competition')">
+  <div class="flex items-center space-x-1">
+    <span>Competition</span>
+    <svg id="competitionSort" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+    </svg>
+  </div>
+</th>
+         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b cursor-pointer hover:bg-gray-200"
+        onclick="sortTable('searchVolume')">
+      <div class="flex items-center space-x-1">
+        <span>Search Volume</span>
+        <svg id="searchVolumeSort" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+      </div>
+    </th>
+
+    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b cursor-pointer hover:bg-gray-200"
+        onclick="sortTable('cpc')">
+      <div class="flex items-center space-x-1">
+        <span>CPC</span>
+        <svg id="cpcSort" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+      </div>
+    </th>
+        </tr>
+      </thead>
+      <tbody id="keywordTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-between items-center mt-4">
+    <div class="text-sm text-gray-600">
+      Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalResults">0</span> results
+    </div>
+    <div class="flex space-x-2">
+      <button id="prevPage" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Previous</button>
+      <div id="pageNumbers" class="flex space-x-1"></div>
+      <button id="nextPage" class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+let brandNames = [];
+let API_BASE = '';
+let backendScopes = [];
+let pca = null;
+let msalAccount = null;
+let messageInterval;
+
+
+// Quota state
+let latestQuota = null;
+let quotaInitialized = false;
+
+
+async function loadConfig() {
+  try {
+    const res = await fetch("/api/frontend_config");
+    if (!res.ok) throw new Error("Failed to load app config.");
+    window.APP_CONFIG = await res.json();
+
+    console.log("Loaded config (from backend):", window.APP_CONFIG);
+
+    API_BASE = window.APP_CONFIG.API_BASE;
+    brandNames = window.APP_CONFIG.BRANDS || [];
+    backendScopes = window.APP_CONFIG.SCOPES || [];
+
+    const msalConfig = {
+      auth: {
+        clientId: window.APP_CONFIG.CLIENT_ID,
+        authority: `https://login.microsoftonline.com/${window.APP_CONFIG.TENANT_ID}`,
+        redirectUri: `${window.location.origin}/frontend/index.html`,
+        postLogoutRedirectUri: `${window.location.origin}/frontend/logout.html`,
+      },
+      cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false },
+    };
+    pca = new msal.PublicClientApplication(msalConfig);
+
+    populateBrandDropdown();
+    populateModelDropdown(window.APP_CONFIG.MODELS || []);  
+     await fetchOpenAIQuotaAndModel(); 
+  } catch (err) {
+    console.error(err);
+    showAlert("error", "Failed to load app config.");
+  }
+}
+// MSAL token helper
+async function acquireToken() {
+  try {
+    return await pca.acquireTokenSilent({ scopes: backendScopes, account: msalAccount });
+  } catch (err) {
+    if (err instanceof msal.InteractionRequiredAuthError) {
+      await pca.loginRedirect({ scopes: backendScopes });
+    } else {
+      throw err;
+    }
+  }
+}
+
+// Centralized quota refresh
+async function refreshAllQuotas() {
+  await fetchAndUpdateQuota();              // Google quota
+  const info = await fetchOpenAIQuotaAndModel(); // OpenAI quota + model
+  if (info && info.remaining_usd !== undefined) {
+    document.getElementById('openaiQuotaLeft').textContent =
+      `$${info.remaining_usd.toFixed(3)}`;
+  }
+
+}
+
+    // Utility
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[ch]));
+    }
+    function escapeCSV(value){ return String(value).replace(/"/g,'""'); }
+
+
+function populateModelDropdown(models) {
+  const dropdown = document.getElementById('model');
+  if (!dropdown) return;
+
+  dropdown.innerHTML = '';
+
+  const labelMap = {
+    "gpt-5": "gpt-5 (Highly creative)",
+    "gpt-5-mini": "gpt-5-mini (Reasonably creative)",
+    "gpt-4o": "gpt-4o (Minimally creative)"
+  };
+
+  models.forEach((m) => {
+    const value = typeof m === "string" ? m : m.id || m.name || JSON.stringify(m);
+    const label = labelMap[value] || value;
+
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    dropdown.appendChild(opt);
+  });
+
+  // Force gpt-5 to be the default selection
+  dropdown.value = "gpt-5";
+}
+
+
+
+function populateBrandDropdown() {
+  const select = document.getElementById('brandSelect');
+  if (!select) return;
+
+  // Always start with an empty, non-disabled placeholder option
+  select.innerHTML = '<option value="" selected></option>';
+
+  // Add predefined brands from backend
+  brandNames.forEach(brand => {
+    const opt = document.createElement('option');
+    opt.value = brand;
+    opt.textContent = brand;
+    select.appendChild(opt);
+  });
+
+  // Initialize TomSelect once
+  if (!select.tomselect) {
+    const ts = new TomSelect(select, {
+      create: true,
+      placeholder: 'Type or select brand (optional)',
+      allowEmptyOption: true,
+      //plugins: ['clear_button'],
+      persist: true,
+      sortField: { field: 'text', direction: 'asc' },
+      render: {
+        option_create: data => `<div class="create">Add <strong>${data.input}</strong></div>`
+      }
+    });
+
+    // Keep typed value like "Maggi" visible
+    const inputEl = ts.control_input;
+    inputEl.addEventListener('blur', () => {
+      const val = inputEl.value.trim();
+      if (val && !ts.getValue()) {
+        ts.addOption({ value: val, text: val });
+        ts.setValue(val);
+      }
+    });
+
+    // Show placeholder by default
+    ts.clear(true);
+  }
+}
+
+//clear buttons
+  function setupClearButton(inputId, buttonId) {
+  const input = document.getElementById(inputId);
+  const btn = document.getElementById(buttonId);
+  if (!input || !btn) return;
+
+  const toggle = () => btn.classList[input.value ? 'remove' : 'add']('hidden');
+  input.addEventListener('input', () => {
+    toggle();
+    estimateCost();   //  recalc when typing too
+  });
+
+  btn.addEventListener('click', () => {
+    input.value = '';
+    toggle();
+    input.focus();
+    applyFilters();
+    updateDownloadButton();
+    estimateCost();   //  recalc when cleared
+  });
+
+  toggle();
+}
+
+    // Alerts
+    let alertTimeout;
+    function showAlert(type, message){
+      const alertContainer = document.getElementById('alertContainer');
+      const errorAlert = document.getElementById('errorAlert');
+      const errorMessage = document.getElementById('errorMessage');
+      if(alertTimeout) clearTimeout(alertTimeout);
+      errorAlert.classList.add('hidden');
+      if(type === 'error'){
+        errorMessage.textContent = message;
+        errorAlert.classList.remove('hidden');
+      }
+      alertContainer.classList.remove('hidden');
+      alertTimeout = setTimeout(() => alertContainer.classList.add('hidden'), 10000);
+    }
+
+    // Validation
+    function validateMandatoryFields(){
+      const topicInput = document.getElementById('topic');
+      const topicError = document.getElementById('topicError');
+      let valid = true;
+      if(!topicInput.value.trim()){
+        topicInput.classList.add('input-error');
+        topicError.textContent = 'Topic is required';
+        topicError.classList.add('active');
+        valid = false;
+      } else {
+        topicInput.classList.remove('input-error');
+        topicError.textContent = '';
+        topicError.classList.remove('active');
+      }
+      if(latestQuota !== null && Number(latestQuota) <= 0){
+        showAlert('error', 'Quota is zero. Please contact your admin.');
+        valid = false;
+      }
+      return valid;
+    }
+
+    document.getElementById('topic').addEventListener('input', () => {
+  const topicInput = document.getElementById('topic');
+  const topicError = document.getElementById('topicError');
+
+  if (topicInput.value.trim()) {
+    topicInput.classList.remove('input-error');
+    topicError.textContent = '';
+    topicError.classList.remove('active');
+  }
+});
+
+    // Table state
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let currentSort = { column: null, asc: true };
+    let filteredRows = [];
+    window._currentRows = [];
+
+    function renderTable(rows){
+  const body = document.getElementById('keywordTableBody');
+  body.innerHTML = '';
+
+  if (!rows || !Array.isArray(rows) || rows.length === 0) {
+    body.innerHTML = `<tr><td colspan="4" class="px-4 py-2 text-center text-gray-500">No results found</td></tr>`;
+    document.getElementById('results').classList.remove('hidden');
+    return;
+  }
+
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="px-4 py-2 border-b whitespace-nowrap overflow-hidden text-ellipsis">${escapeHtml(r.keyword)}</td>
+      <td class="px-4 py-2 border-b">${escapeHtml(r.competition)}</td>
+      <td class="px-4 py-2 border-b">${escapeHtml(r.searchVolume)}</td>
+      <td class="px-4 py-2 border-b">${escapeHtml(r.cpc)}</td>`;
+    body.appendChild(tr);
+  });
+
+  document.getElementById('results').classList.remove('hidden');
+  setTimeout(() => document.getElementById('resultsHeader').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  window._currentRows = rows;
+}
+
+    function updateTable(){
+      const tbody = document.getElementById('keywordTableBody');
+      const start = (currentPage - 1) * rowsPerPage;
+      const pageRows = filteredRows.slice(start, start + rowsPerPage);
+      tbody.innerHTML = '';
+      pageRows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-4 py-2 border-b whitespace-nowrap overflow-hidden text-ellipsis">${escapeHtml(r.keyword)}</td>
+          <td class="px-4 py-2 border-b">${escapeHtml(r.competition)}</td>
+          <td class="px-4 py-2 border-b">${escapeHtml(r.searchVolume)}</td>
+          <td class="px-4 py-2 border-b">${escapeHtml(r.cpc)}</td>`;
+        tbody.appendChild(tr);
+      });
+      const total = filteredRows.length;
+      document.getElementById('totalResults').textContent = total;
+      document.getElementById('showingStart').textContent = total ? start + 1 : 0;
+      document.getElementById('showingEnd').textContent = Math.min(start + rowsPerPage, total);
+    }
+
+    function setupPagination(){
+      const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
+      const pageNumbers = document.getElementById('pageNumbers');
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      pageNumbers.innerHTML = '';
+      for(let i = 1; i <= totalPages; i++){
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = `
+      px-3 py-2 text-sm rounded-md transition 
+      ${i === currentPage 
+        ? 'bg-gradient-to-r from-violet-600 to-violet-700 text-white shadow' 
+        : 'bg-white text-violet-900 border border-violet-400 hover:bg-violet-50'}`;
+        btn.addEventListener('click', () => { currentPage = i; updateTable(); setupPagination(); });
+        pageNumbers.appendChild(btn);
+      }
+      prevPage.disabled = currentPage === 1;
+      nextPage.disabled = currentPage === totalPages || filteredRows.length === 0;
+      prevPage.onclick = () => { if(currentPage > 1){ currentPage--; updateTable(); setupPagination(); } };
+      nextPage.onclick = () => { if(currentPage < totalPages){ currentPage++; updateTable(); setupPagination(); } };
+    }
+
+    function volumeMatch(value, filter){
+     if ((!value || value.toString().trim().toUpperCase() === 'NA') && filter) return false;
+
+  const num = parseInt(String(value).replace(/[^0-9]/g, '')) || 0;
+  if (filter === '0-1000') return num <= 1000;
+  if (filter === '1000-10000') return num > 1000 && num <= 10000;
+  if (filter === '10000-50000') return num > 10000 && num <= 50000;
+  if (filter === '50000+') return num > 50000;
+  return true; // when "All Volume" is chosen, include everything including NA
+}
+    function cpcMatch(value, filter){
+      if ((!value || value.toString().trim().toUpperCase() === 'NA') && filter) return false;
+
+  const num = parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0;
+  if (filter === '0-1') return num <= 1;
+  if (filter === '1-3') return num > 1 && num <= 3;
+  if (filter === '3-5') return num > 3 && num <= 5;
+  if (filter === '5+') return num > 5;
+  return true; // when "All CPC" is chosen, include everything including NA
+}
+
+    function isAnyFilterApplied(){
+      const comp = document.getElementById('competitionFilter').value;
+      const vol = document.getElementById('volumeFilter').value;
+      const cpc = document.getElementById('cpcFilter').value;
+      const q = document.getElementById('keywordSearch').value.trim();
+      return !!(comp || vol || cpc || q);
+    }
+
+    function getFilteredRows(){
+      const comp = document.getElementById('competitionFilter').value;
+      const vol = document.getElementById('volumeFilter').value;
+      const cpc = document.getElementById('cpcFilter').value;
+      const q = document.getElementById('keywordSearch').value.trim().toLowerCase();
+      const rows = window._currentRows || [];
+      if(!comp && !vol && !cpc && !q) return rows;
+      return rows.filter(row => {
+        const matchesSearch = row.keyword.toLowerCase().includes(q);
+        const matchesComp = !comp || row.competition.trim().toLowerCase() === comp.trim().toLowerCase();
+        const matchesVol = !vol || volumeMatch(row.searchVolume, vol);
+        const matchesCpc = !cpc || cpcMatch(row.cpc, cpc);
+        return matchesSearch && matchesComp && matchesVol && matchesCpc;
+      });
+    }
+
+    function applyFilters(){
+      filteredRows = getFilteredRows();
+      currentPage = 1;
+      updateTable();
+      setupPagination();
+      updateDownloadButton();
+    }
+
+    function setupFilters(){
+const comp = document.getElementById('competitionFilter');
+const vol = document.getElementById('volumeFilter');
+const cpc = document.getElementById('cpcFilter');
+[comp, vol, cpc].forEach((el) => {
+if (!el) return;
+el.addEventListener('change', applyFilters);
+});
+}
+
+    function setupSearch(){
+      const searchInput = document.getElementById('keywordSearch');
+      const clearBtn = document.getElementById('clearSearch');
+      let timeout;
+      const handle = () => { clearTimeout(timeout); timeout = setTimeout(() => applyFilters(), 300); };
+      searchInput.addEventListener('input', () => { clearBtn.classList[searchInput.value ? 'remove' : 'add']('hidden'); handle(); });
+      clearBtn.addEventListener('click', () => { searchInput.value = ''; clearBtn.classList.add('hidden'); applyFilters(); });
+    }
+function setupCSVDownload() {
+  const downloadButton = document.getElementById('downloadCSV');
+  if (!downloadButton) return;
+
+  // ✅ Remove any previous event listeners (clone-and-replace trick)
+  const newButton = downloadButton.cloneNode(true);
+  downloadButton.parentNode.replaceChild(newButton, downloadButton);
+
+  // ✅ Add a single fresh listener
+  newButton.addEventListener('click', () => {
+    const rowsToExport = getFilteredRows();
+    if (!rowsToExport.length) {
+      alert('No data available to download.');
+      return;
+    }
+
+    const csv = ['Keyword,Competition,Search Volume,CPC'];
+    rowsToExport.forEach(row => {
+      csv.push(`"${escapeCSV(row.keyword)}","${escapeCSV(row.competition)}","${escapeCSV(row.searchVolume)}","${escapeCSV(row.cpc)}"`);
+    });
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    // --- Build topic + UK date/time filename ---
+    const topic = document.getElementById('topic')?.value?.trim().replace(/\s+/g, "_") || "keywords";
+    const ukTime = new Date().toLocaleString("en-GB", {
+      timeZone: "Europe/London",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+
+    const formattedDate = ukTime
+      .replace(/\//g, "-")
+      .replace(",", "")
+      .replace(":", "-")
+      .replace(/\s+/g, "_");
+
+    const filename = isAnyFilterApplied()
+      ? `${topic}_filtered_${formattedDate}_UK.csv`
+      : `${topic}_all_${formattedDate}_UK.csv`;
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  updateDownloadButton();
+}
+
+
+
+ function updateDownloadButton() {
+  const btn = document.getElementById('downloadCSV');
+  const hasFilters = isAnyFilterApplied();
+  const rows = getFilteredRows();
+  const hasRows = rows && rows.length > 0;
+
+  btn.disabled = !hasRows;
+  btn.setAttribute('aria-disabled', String(!hasRows));
+  btn.textContent = hasFilters ? 'Download Filtered Results' : 'Download All Results';
+}
+
+function resetFiltersAndSearch(){
+const compEl = document.getElementById('competitionFilter');
+const volEl = document.getElementById('volumeFilter');
+const cpcEl = document.getElementById('cpcFilter');
+const searchEl = document.getElementById('keywordSearch');
+const clearSearchEl = document.getElementById('clearSearch');
+if (compEl) compEl.value = '';
+if (volEl) volEl.value = '';
+if (cpcEl) cpcEl.value = '';
+if (searchEl) searchEl.value = '';
+if (clearSearchEl) clearSearchEl.classList.add('hidden');
+currentPage = 1;
+filteredRows = [...(window._currentRows || [])];
+updateTable();
+setupPagination();
+updateDownloadButton();
+}
+
+    function sortTable(column){
+      if(currentSort.column === column){ currentSort.asc = !currentSort.asc; } else { currentSort = { column, asc: true }; }
+      filteredRows.sort((a,b) => {
+        let valA = a[column]; let valB = b[column];
+        if(column === 'searchVolume' || column === 'cpc'){
+          valA = parseFloat(String(valA).replace(/[^0-9.]/g,'')) || 0;
+          valB = parseFloat(String(valB).replace(/[^0-9.]/g,'')) || 0;
+        }
+        if(valA < valB) return currentSort.asc ? -1 : 1;
+        if(valA > valB) return currentSort.asc ? 1 : -1;
+        return 0;
+      });
+      currentPage = 1; updateTable(); setupPagination();
+    }
+    window.sortTable = sortTable; // expose for th onclick
+
+  function displayResults(rows){
+  if (!rows || !Array.isArray(rows)) {
+    showAlert('error', 'No keyword rows returned.');
+    filteredRows = [];
+    updateTable();
+    setupPagination();
+    updateDownloadButton();
+    return;
+  }
+
+  filteredRows = [...rows];
+  resetFiltersAndSearch();
+  updateTable();
+  setupFilters();
+  setupSearch();
+  setupPagination();
+  setupCSVDownload();
+}
+
+
+
+function fmtUsd(x){
+  const n = Number(x);
+  return Number.isFinite(n) ? `$${n.toFixed(3)}` : '-';
+}
+
+async function updateOpenAIQuotaBox(info) {
+  if (!info) return;
+
+  const leftEl = document.getElementById('openaiQuotaLeft');
+
+  if (leftEl) {
+    let usd = info.remaining_usd;
+    if (usd !== undefined && usd !== null && !isNaN(usd)) {
+      leftEl.textContent = `$${usd.toFixed(3)} `;
+    } else {
+      leftEl.textContent = "-";
+    }
+  }
+}
+
+async function fetchOpenAIQuotaAndModel() {
+  try {
+    const [quotaRes, configRes] = await Promise.all([
+      fetch(`${API_BASE}/api/openai_quota`, { method: 'GET' }),
+      fetch(`${API_BASE}/api/frontend_config`, { method: 'GET' })
+    ]);
+
+    if (!quotaRes.ok) {
+      console.warn('openai_quota status:', quotaRes.status);
+      updateOpenAIQuotaBox({}, '-');
+      return null;
+    }
+    const info = await quotaRes.json();
+    updateOpenAIQuotaBox(info); 
+
+    let config = {};
+    if (configRes.ok) {
+      config = await configRes.json();
+    } else {
+      console.warn('frontend_config status:', configRes.status);
+    }
+
+    // Take current dropdown model, fallback to first from config
+    let currentModel = document.getElementById('model').value;
+    if (!currentModel && config && config.MODELS && config.MODELS.length > 0) {
+      currentModel = config.MODELS[0];
+    }
+
+    updateOpenAIQuotaBox(info);
+
+    console.log("Initial quota + model:", info, currentModel);
+
+    return info;   // return quota info so refreshAllQuotas can use it
+  } catch (e) {
+    console.error('openai_quota fetch error:', e);
+    updateOpenAIQuotaBox({}, '-');
+    return null;
+  }
+}
+
+
+    async function fetchAndUpdateQuota(){
+      if(!msalAccount) return;
+      try {
+        const tokenResponse = await pca.acquireTokenSilent({ scopes: backendScopes, account: msalAccount });
+        const res = await fetch(`${API_BASE}/api/quota`, { method: 'GET', headers: { Authorization: `Bearer ${tokenResponse.accessToken}` } });
+        if(res.ok){
+          const data = await res.json();
+          if(data.quotaLeft !== undefined){
+            latestQuota = data.quotaLeft;
+            document.getElementById('quotaLeft').textContent = `${data.quotaLeft}`;
+            quotaInitialized ? console.log('Quota refreshed:', data.quotaLeft) : console.log('Initial quota loaded:', data.quotaLeft);
+            quotaInitialized = true;
+          }
+        } else {
+          document.getElementById('quotaLeft').textContent = '-';
+        }
+      } catch(err){
+        console.error('Error fetching quota:', err);
+        document.getElementById('quotaLeft').textContent = '-';
+      }
+    }
+
+   
+
+   function attachCoreUI() {
+  const slider = document.getElementById('keywordCount');
+  const valueDisplay = document.getElementById('keywordValue');
+  slider.addEventListener('input', function() {
+    valueDisplay.textContent = this.value;
+    estimateCost(); //  update when slider changes
+  });
+
+
+// Keep clear buttons only for inputs that actually have them
+//setupClearButton('topic','clearTopic');
+//setupClearButton('brandSelect','clearBrandname');
+//setupClearButton('modifier','clearModifier');
+
+['topic','brandSelect','modifier'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', estimateCost);
+  });
+
+  // Model dropdown
+    const modelDropdown = document.getElementById('model');
+
+  modelDropdown.addEventListener('change', async () => {
+    await fetchOpenAIQuotaAndModel();
+    estimateCost(); // update when model changes
+  });
+
+document.getElementById('generateBtn').addEventListener('click', (e) => {
+e.preventDefault();
+const body = document.getElementById('keywordTableBody');
+if(body){ body.innerHTML = ''; }
+document.getElementById('results').classList.add('hidden');
+if(validateMandatoryFields()) callGenerateAsync();
+      });
+
+  // refresh quota when switching models
+  //modelDropdown = document.getElementById('model');
+  modelDropdown.addEventListener('change', async () => {
+    await fetchOpenAIQuotaAndModel();
+  });
+    }
+
+    // Boot
+document.addEventListener('DOMContentLoaded', () => {
+  (async () => {
+    // Load config + pricing
+    await loadConfig();
+    await loadPricing();
+
+    // Populate brands and attach UI
+    populateBrandDropdown();
+    attachCoreUI();
+   // setupCSVDownload();
+    estimateCost(); // initial estimate
+
+    // Handle MSAL login flow
+    pca.handleRedirectPromise().then(async () => {
+  const accounts = pca.getAllAccounts();
+  if (accounts.length === 0) {
+    window.location.href = `${window.location.origin}/frontend/login.html`;
+    return;
+  }
+
+  msalAccount = accounts[0];
+  window._msalAccount = msalAccount;
+updateProfileInitial();
+
+
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+
+  await refreshAllQuotas();
+});
+
+
+    // Logout
+   document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("firstName");
+  pca.logoutRedirect({
+    postLogoutRedirectUri: `${window.location.origin}/frontend/logout.html`
+  });
+    });
+  })();
+});
+
+async function callGenerateAsync() {
+  const topic = document.getElementById('topic').value.trim();
+  const brand = document.getElementById('brandSelect').value.trim();
+  const modifiers = document.getElementById('modifier').value.trim();
+  const num_keywords = parseInt(document.getElementById('keywordCount').value, 10) || 10;
+  const model = document.getElementById('model').value;
+
+  const status = document.getElementById('status');
+  const generateBtn = document.getElementById('generateBtn');
+  const estimateBox = document.getElementById('estimateBox'); // estimate / actual box
+
+  // --- Disable button + clear estimate ---
+  status.textContent = 'Generating keywords...';
+  disableFormInputs(true);
+  generateBtn.disabled = true;
+  generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  estimateBox.textContent = ""; // hide estimate while processing
+
+  try {
+    const account = window._msalAccount;
+    if (!account) throw new Error('User account not found. Please log in again.');
+
+    const tokenResponse = await pca.acquireTokenSilent({ scopes: backendScopes, account });
+    const payload = { topic, brand, modifiers, num_keywords, model };
+
+    // --- Direct API call (no queue/polling) ---
+    const res = await fetch(`${API_BASE}/api/generate_keywords`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // 'Authorization': `Bearer ${tokenResponse.accessToken}`, // uncomment if required later
+      },
+      body: JSON.stringify(payload),
+    });
+
+    // Read the response body exactly once
+    const result = await res.json();
+
+    // --- Handle errors ---
+    if (!res.ok) {
+      console.error("API returned error:", result);
+      throw new Error(result.detail || 'Failed to generate keywords.');
+    }
+
+    console.log("Generation result:", result);
+    console.log("Raw result keys:", Object.keys(result));
+    // --- Stop any playful messages ---
+    if (model === "gpt-5") stopPlayfulMessages();
+
+    // --- Step 3: Render results ---
+    status.textContent = '';
+    renderTable(result.rows);
+    displayResults(result.rows);
+    updateDownloadButton();
+
+// --- Replace estimate with actual cost ---
+const cost = Number(result?.usdSpent ?? result?.usd_spent ?? result?.usage?.usd_spent);
+
+if (Number.isFinite(cost) && cost > 0) {
+  estimateBox.textContent = `Actual cost: $${cost.toFixed(3)}`;
+  console.log(`Actual cost displayed: $${cost.toFixed(3)}`);
+} else {
+  estimateBox.textContent = "Actual cost unavailable";
+  console.warn("Could not determine usdSpent from result:", result);
+}
+
+    // --- Show quota + model ---
+    renderQuotaInfo(result);
+
+    if (result.quotaLeft !== undefined) {
+      latestQuota = result.quotaLeft;
+      document.getElementById('quotaLeft').textContent = `${result.quotaLeft}`;
+    }
+
+    if (result.openaiQuota) {
+      updateOpenAIQuotaBox(result.openaiQuota, result.model);
+    }
+
+  } catch (err) {
+    console.error(err);
+    status.textContent = '';
+    showAlert('error', err.message || 'An unexpected error occurred.');
+  } finally {
+    generateBtn.disabled = false;
+    generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    disableFormInputs(false);
+    await fetchAndUpdateQuota();
+    await fetchOpenAIQuotaAndModel();
+  }
+}
+
+
+function renderQuotaInfo(result) {
+  const box = document.getElementById("quotaInfoBox");
+  if (!box) return;
+
+  if (!result || result.status !== "SUCCESS") {
+    box.classList.add("hidden");
+    return;
+  }
+
+  box.innerHTML = `
+    <p><strong>USD Spent (this request):</strong> $${(result.usdSpent || 0).toFixed(3)}</p>
+  `;
+  box.classList.remove("hidden");
+}
+
+let usdToGbpRate = null; // cached for session
+
+
+async function estimateCost() {
+  const topic = document.getElementById('topic').value.trim();
+  const brand = document.getElementById('brandSelect').value.trim();
+  const modifiers = document.getElementById('modifier').value.trim();
+  const num_keywords = parseInt(document.getElementById('keywordCount').value, 10) || 10;
+  const model = document.getElementById('model').value;
+
+  if (!topic) {
+    document.getElementById('estimateBox').textContent = "";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/estimate_cost`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, brand, modifiers, num_keywords, model })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('estimateBox').textContent =
+        `Est. cost: $${data.estimated_cost.toFixed(3)} (Actual may vary)`;
+    } else {
+      document.getElementById('estimateBox').textContent = "Estimate unavailable";
+    }
+  } catch (err) {
+    console.error("Error estimating cost:", err);
+    document.getElementById('estimateBox').textContent = "Estimate unavailable";
+  }
+}
+
+
+function disableFormInputs(disabled) {
+  const ids = ["topic", "modifier", "keywordCount", "model"];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = disabled;
+      if (disabled) {
+        el.classList.add("opacity-50", "cursor-not-allowed");
+      } else {
+        el.classList.remove("opacity-50", "cursor-not-allowed");
+      }
+    }
+  });
+
+  // Handle TomSelect for Brand Name
+  const brandSelect = document.getElementById("brandSelect");
+  if (brandSelect && brandSelect.tomselect) {
+    brandSelect.tomselect.disable();   // freeze it
+    if (!disabled) brandSelect.tomselect.enable(); // unfreeze if needed
+  }
+
+  // Also handle clear buttons (×)
+  const clearBtns = ["clearTopic",  "clearModifier"];
+  clearBtns.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.disabled = disabled;
+      if (disabled) {
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+      } else {
+        btn.classList.remove("opacity-50", "cursor-not-allowed");
+      }
+    }
+  });
+}
+
+function startPlayfulMessages() {
+  const playfulMessages = [
+    "Grabbing coffee ☕ while GPT-5 thinks",
+    "Your keywords are baking in the oven🍪",
+    "Almost there.Don’t forget to breathe😌"
+  ];
+
+  const statusEl = document.getElementById("status");
+  if (!statusEl) return;
+
+  let index = 0;
+  statusEl.textContent = playfulMessages[index];
+  index++;
+
+  messageInterval = setInterval(() => {
+    statusEl.textContent = playfulMessages[index];
+    index = (index + 1) % playfulMessages.length;
+  }, 2500); // change every 2.5s
+}
+
+function stopPlayfulMessages() {
+  clearInterval(messageInterval);
+  const statusEl = document.getElementById("status");
+  if (statusEl) statusEl.textContent = "";
+}
+
+async function loadPricing() {
+}
+
+
+
+</script>
+<!-- Feature Card with Slide-Down Expansion -->
+<div x-data="{ open: false }"
+     @mouseenter="open = true"
+     @mouseleave="open = false"
+     class="absolute left-12 top-64 z-40 w-80">
+
+  <!-- Header (compact) -->
+  <div class="flex items-center space-x-2 cursor-pointer px-3 py-2 bg-white border border-gray-200 rounded-t-lg shadow-sm font-semibold text-sm text-gray-800 hover:bg-gray-50 transition">
+    <span>🤔</span>
+    <span><h3>How it works?</h3></span>
+  </div>
+
+  <!-- Expanding content -->
+  <div x-show="open"
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="opacity-0 max-h-0"
+       x-transition:enter-end="opacity-100 max-h-96"
+       x-transition:leave="transition ease-in duration-200"
+       x-transition:leave-start="opacity-100 max-h-96"
+       x-transition:leave-end="opacity-0 max-h-0"
+       class="px-4 py-4 bg-white border border-t-0 border-gray-200 rounded-b-xl shadow text-sm text-gray-700 space-y-3 overflow-hidden">
+
+    <ol class="space-y-3">
+      <li class="flex items-start space-x-3">
+
+        <p>💡Input a topic. Optionally add a brand or keyword modifier.</p>
+      </li>
+      <li class="flex items-start space-x-3">
+        <p>💡GPT model generates up to 50 creative keyword variations.</p>
+      </li>
+      <li class="flex items-start space-x-3">
+        <p>💡Google Keyword Planner adds real search data and competition insights.</p>
+      </li>
+      <li class="flex items-start space-x-3">
+       <p>💡Download your ready keyword list instantly.</p>
+      </li>
+    </ol>
+  </div>
+</div>
+
+
+
+<!-- Right Feature Card -->
+<div class="hidden lg:flex absolute right-12 top-80 items-center space-x-4">
+  <div class="relative bg-white/85 backdrop-blur-md rounded-2xl shadow-md p-5 w-72 border border-gray-100 overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg">
+    <!-- Brighter emoji background -->
+    <div class="absolute -bottom-2 -right-1 text-[5.5rem] opacity-20 select-none pointer-events-none">
+      📊
+    </div>
+
+    <h4 class="font-semibold text-gray-800 mb-3">AI Insights + Real Data</h4>
+    <p class="text-sm text-gray-600 leading-relaxed mb-3">
+      Generate creative, data-backed keyword ideas with GPT intelligence and Google Ads insights.
+    </p>
+
+    <div class="absolute bottom-0 left-0 w-full h-[4px] bg-[#fdfd6b] rounded-b-2xl"></div>
+  </div>
+</div>
+
+
+
+
+</body>
+</html>
+
